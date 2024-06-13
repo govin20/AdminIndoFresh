@@ -3,8 +3,6 @@ import { Container, Form, InputGroup, Button, Table, Modal, Pagination } from 'r
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, addDoc, getDocs, updateDoc, doc, deleteDoc } from 'firebase/firestore';
 
-// Your web app's Firebase configuration
-require('dotenv').config();
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -31,7 +29,7 @@ const unformatRupiah = (formattedString) => {
   return formattedString.replace(/[Rp.,\s]/g, '');
 };
 
-function App() {
+function Produk() {
   const [form, setForm] = useState({
     nama: '',
     harga: '',
@@ -290,4 +288,4 @@ function App() {
   );
 }
 
-export default App;
+export default Produk;
