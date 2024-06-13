@@ -25,6 +25,10 @@ const formatRupiah = (angka) => {
   }).format(angka);
 };
 
+const unformatRupiah = (formattedString) => {
+  return formattedString.replace(/[Rp.,\s]/g, '');
+};
+
 function App() {
   const [form, setForm] = useState({
     nama: '',
@@ -48,7 +52,13 @@ function App() {
 
   const handleChange = (e) => {
     const { id, value } = e.target;
-    setForm({ ...form, [id]: value });
+    
+    if (id === 'harga') {
+      const unformattedValue = unformatRupiah(value);
+      setForm({ ...form, [id]: unformattedValue });
+    } else {
+      setForm({ ...form, [id]: value });
+    }
 
     if (id === 'gambar') {
       setImagePreview(value);
@@ -61,7 +71,7 @@ function App() {
       const querySnapshot = await getDocs(collection(db, 'buah'));
       const data = querySnapshot.docs.map((doc) => doc.data());
       const productExists = data.some((buah) => buah.nama.toLowerCase() === form.nama.toLowerCase());
-  
+
       if (productExists && !editing) {
         alert('Produk yang ditambahkan sudah ada!');
       } else {
@@ -85,7 +95,7 @@ function App() {
           gambar: '',
         });
         setImagePreview('');
-        fetchBuahData(); 
+        fetchBuahData();
         setShowModal(false);
       }
     } catch (error) {
@@ -93,7 +103,6 @@ function App() {
       alert('Error menambah/memperbarui data');
     }
   };
-  
 
   const fetchBuahData = async () => {
     try {
@@ -219,56 +228,62 @@ function App() {
       </Pagination>
 
       <Modal show={showModal} onHide={() => setShowModal(false)}>
-  <Modal.Header closeButton>
-    <Modal.Title>{editing ? 'Edit Produk' : 'Tambah Produk'}</Modal.Title>
-  </Modal.Header>
-  <Modal.Body>
-    <Form onSubmit={handleSubmit}>
-      <Form.Label htmlFor="nama">Nama Produk :</Form.Label>
-      <Form.Control type="text" id="nama" value={form.nama} onChange={handleChange} aria-describedby="passwordHelpBlock" />
+        <Modal.Header closeButton>
+          <Modal.Title>{editing ? 'Edit Produk' : 'Tambah Produk'}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form onSubmit={handleSubmit}>
+            <Form.Label htmlFor="nama">Nama Produk :</Form.Label>
+            <Form.Control type="text" id="nama" value={form.nama} onChange={handleChange} aria-describedby="passwordHelpBlock" />
 
-      <Form.Label htmlFor="harga">Harga :</Form.Label>
-      <Form.Control type="text" id="harga" value={form.harga} onChange={handleChange} aria-describedby="passwordHelpBlock" />
+            <Form.Label htmlFor="harga">Harga :</Form.Label>
+            <Form.Control
+              type="text"
+              id="harga"
+              value={formatRupiah(form.harga)}
+              onChange={handleChange}
+              aria-describedby="passwordHelpBlock"
+            />
 
-      <Form.Select className='mt-3' id="jenisHarga" value={form.jenisHarga} onChange={handleChange} aria-label="Default select example">
-        <option value="">Pilih Jenis Harga</option>
-        <option value="Kg">Kg</option>
-        <option value="Pcs">Pcs</option>
-        <option value="Gram">Gram</option>
-      </Form.Select>
+            <Form.Select className="mt-3" id="jenisHarga" value={form.jenisHarga} onChange={handleChange} aria-label="Default select example">
+              <option value="">Pilih Jenis Harga</option>
+              <option value="Kg">Kg</option>
+              <option value="Pcs">Pcs</option>
+              <option value="Gram">Gram</option>
+            </Form.Select>
 
-      <Form.Select className='mt-3' id="jenis" value={form.jenis} onChange={handleChange} aria-label="Default select example">
-        <option value="">Pilih Jenis Produk</option>
-        <option value="Buah">Buah</option>
-        <option value="Sayur">Sayur</option>
-        <option value="BuahKering">Buah Kering</option>
-      </Form.Select>
+            <Form.Select className="mt-3" id="jenis" value={form.jenis} onChange={handleChange} aria-label="Default select example">
+              <option value="">Pilih Jenis Produk</option>
+              <option value="Buah">Buah</option>
+              <option value="Sayur">Sayur</option>
+              <option value="Ikan">Ikan</option>
+              <option value="BuahKering">Buah Kering</option>
+            </Form.Select>
 
-      <Form.Label htmlFor="deskripsi">Deskripsi :</Form.Label>
-      <InputGroup>
-        <Form.Control id="deskripsi" as="textarea" value={form.deskripsi} onChange={handleChange} aria-label="With textarea" />
-      </InputGroup>
+            <Form.Label htmlFor="deskripsi">Deskripsi :</Form.Label>
+            <InputGroup>
+              <Form.Control id="deskripsi" as="textarea" value={form.deskripsi} onChange={handleChange} aria-label="With textarea" />
+            </InputGroup>
 
-      <Form.Label htmlFor="nutrisi">Nutrisi :</Form.Label>
-      <Form.Control type="number" id="nutrisi" value={form.nutrisi} onChange={handleChange} aria-describedby="passwordHelpBlock" />
+            <Form.Label htmlFor="nutrisi">Nutrisi :</Form.Label>
+            <Form.Control type="number" id="nutrisi" value={form.nutrisi} onChange={handleChange} aria-describedby="passwordHelpBlock" />
 
-      <Form.Label htmlFor="gambar">Link Gambar :</Form.Label>
-      <InputGroup>
-        <Form.Control id="gambar" as="textarea" value={form.gambar} onChange={handleChange} aria-label="With textarea" />
-      </InputGroup>
-      {imagePreview && (
-        <div className="mt-2">
-          <img src={imagePreview} alt="Preview" style={{ width: '200px', height: '200px' }} />
-        </div>
-      )}
+            <Form.Label htmlFor="gambar">Link Gambar :</Form.Label>
+            <InputGroup>
+              <Form.Control id="gambar" as="textarea" value={form.gambar} onChange={handleChange} aria-label="With textarea" />
+            </InputGroup>
+            {imagePreview && (
+              <div className="mt-2">
+                <img src={imagePreview} alt="Preview" style={{ width: '200px', height: '200px' }} />
+              </div>
+            )}
 
-      <Button style={{ width: '100%' }} type="submit" className="mt-3 bg-success">
-        {editing ? 'Update' : 'Simpan'}
-      </Button>
-    </Form>
-  </Modal.Body>
-</Modal>
-
+            <Button style={{ width: '100%' }} type="submit" className="mt-3 bg-success">
+              {editing ? 'Update' : 'Simpan'}
+            </Button>
+          </Form>
+        </Modal.Body>
+      </Modal>
     </Container>
   );
 }
