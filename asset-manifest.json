@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/AdminIndofresh/static/css/main.ff02f4b5.css",
+    "main.js": "/AdminIndofresh/static/js/main.5c36c960.js",
+    "static/js/453.80e4b90c.chunk.js": "/AdminIndofresh/static/js/453.80e4b90c.chunk.js",
+    "index.html": "/AdminIndofresh/index.html",
+    "main.ff02f4b5.css.map": "/AdminIndofresh/static/css/main.ff02f4b5.css.map",
+    "main.5c36c960.js.map": "/AdminIndofresh/static/js/main.5c36c960.js.map",
+    "453.80e4b90c.chunk.js.map": "/AdminIndofresh/static/js/453.80e4b90c.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.ff02f4b5.css",
+    "static/js/main.5c36c960.js"
+  ]
+}
