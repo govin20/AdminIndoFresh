@@ -234,25 +234,26 @@ function Produk() {
         <Modal.Body>
           <Form onSubmit={handleSubmit}>
             <Form.Label htmlFor="nama">Nama Produk :</Form.Label>
-            <Form.Control type="text" id="nama" value={form.nama} onChange={handleChange} aria-describedby="passwordHelpBlock" />
+            <Form.Control required type="text" id="nama" value={form.nama} onChange={handleChange} aria-describedby="passwordHelpBlock" />
 
             <Form.Label htmlFor="harga">Harga :</Form.Label>
             <Form.Control
+            required
               type="text"
               id="harga"
-              value={formatRupiah(form.harga)}
+              value={form.harga}
               onChange={handleChange}
               aria-describedby="passwordHelpBlock"
             />
 
-            <Form.Select className="mt-3" id="jenisHarga" value={form.jenisHarga} onChange={handleChange} aria-label="Default select example">
+            <Form.Select required className="mt-3" id="jenisHarga" value={form.jenisHarga} onChange={handleChange} aria-label="Default select example">
               <option value="">Pilih Jenis Harga</option>
               <option value="Kg">Kg</option>
               <option value="Pcs">Pcs</option>
               <option value="Gram">Gram</option>
             </Form.Select>
 
-            <Form.Select className="mt-3" id="jenis" value={form.jenis} onChange={handleChange} aria-label="Default select example">
+            <Form.Select required className="mt-3" id="jenis" value={form.jenis} onChange={handleChange} aria-label="Default select example">
               <option value="">Pilih Jenis Produk</option>
               <option value="Buah">Buah</option>
               <option value="Sayur">Sayur</option>
@@ -262,15 +263,15 @@ function Produk() {
 
             <Form.Label htmlFor="deskripsi">Deskripsi :</Form.Label>
             <InputGroup>
-              <Form.Control id="deskripsi" as="textarea" value={form.deskripsi} onChange={handleChange} aria-label="With textarea" />
+              <Form.Control required id="deskripsi" as="textarea" value={form.deskripsi} onChange={handleChange} aria-label="With textarea" />
             </InputGroup>
 
             <Form.Label htmlFor="nutrisi">Nutrisi :</Form.Label>
-            <Form.Control type="number" id="nutrisi" value={form.nutrisi} onChange={handleChange} aria-describedby="passwordHelpBlock" />
+            <Form.Control required type="number" id="nutrisi" value={form.nutrisi} onChange={handleChange} aria-describedby="passwordHelpBlock" />
 
             <Form.Label htmlFor="gambar">Link Gambar :</Form.Label>
             <InputGroup>
-              <Form.Control id="gambar" as="textarea" value={form.gambar} onChange={handleChange} aria-label="With textarea" />
+              <Form.Control required id="gambar" as="textarea" value={form.gambar} onChange={handleChange} aria-label="With textarea" />
             </InputGroup>
             {imagePreview && (
               <div className="mt-2">
