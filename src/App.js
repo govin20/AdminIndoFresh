@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import { Container, Nav, Navbar } from 'react-bootstrap';
 import Produk from './components/Produk/Produk';
-import User from './components/user/User';
+import Pesanan from './components/pesanan/pesanan';
 import Button from 'react-bootstrap/Button';
 import Offcanvas from 'react-bootstrap/Offcanvas';
 import Login from './components/login/login';
@@ -33,8 +33,8 @@ function App() {
                   <Nav.Link as={Link} to="/Produk">
                     Produk
                   </Nav.Link>
-                  <Nav.Link as={Link} to="/user">
-                    User
+                  <Nav.Link as={Link} to="/Pesanan">
+                    Pesanan
                   </Nav.Link>
                   <Button variant="outline-danger" onClick={handleLogout}>
                     Logout
@@ -50,7 +50,7 @@ function App() {
           <Route path="/" element={<Navigate to={isAuthenticated ? '/Produk' : '/Login'} />} />
           <Route path="/Login" element={isAuthenticated ? <Navigate to="/Produk" /> : <Login setIsAuthenticated={setIsAuthenticated} />} />
           <Route path="/Produk" element={isAuthenticated ? <Produk /> : <Navigate to="/Login" />} />
-          <Route path="/user" element={isAuthenticated ? <User /> : <Navigate to="/Login" />} />
+          <Route path="/Pesanan" element={isAuthenticated ? <Pesanan /> : <Navigate to="/Login" />} />
         </Routes>
       </Container>
     </Router>
