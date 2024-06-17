@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Table } from 'react-bootstrap';
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, getDocs,updateDoc, doc } from 'firebase/firestore';
+import { getFirestore, collection, getDocs, updateDoc, doc } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -51,29 +51,31 @@ export default function Pesanan() {
     const orderDocRef = doc(db, 'pesanan', orderId);
     await updateDoc(orderDocRef, { status: newStatus });
 
-    setOrders((prevOrders) =>
-      prevOrders.map((order) =>
-        order.id === orderId ? { ...order, status: newStatus } : order
-      )
-    );
+    setOrders((prevOrders) => prevOrders.map((order) => (order.id === orderId ? { ...order, status: newStatus } : order)));
 
     // Tampilkan alert ketika status berhasil diubah
     alert(`Status pesanan dengan ID ${orderId} berhasil diubah menjadi ${newStatus}`);
   };
+  const formatRupiah = (angka) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+    }).format(angka);
+  };
 
   return (
-    <Container>
-        <Table striped bordered hover>
-        <thead>
+    <Container className="mt-2 w-100 mx-auto">
+      <h4 className="mb-2">Pesanan</h4>
+      <Table striped bordered hover responsive className="table-sm">
+        <thead className="thead-dark">
           <tr>
             <th>ID Pesanan</th>
-            <th>ID User</th>
             <th>Waktu</th>
             <th>Pembayaran</th>
             <th>Pengiriman</th>
-            <th>Nama</th>
-            <th>Harga</th>
-            <th>Jumlah</th>
+            <th>Nama Barang</th>
+            <th>Harga Barang</th>
+            <th>Jumlah Barang</th>
             <th>Total Jumlah</th>
             <th>Total Harga</th>
             <th>Alamat</th>
@@ -83,91 +85,41 @@ export default function Pesanan() {
           </tr>
         </thead>
         <tbody>
-        {orders.map((order) => {
-          const user = users[order.userId] || {};
-          return (
-            <tr key={order.id}>
-              <td>{order.id}</td>
-              <td>{order.userId}</td>
-              <td>{convertFirebaseDate(order.createdAt)}</td>
-              <td>{order.paymentMethod}</td>
-              <td>{order.shippingMethod}</td>
-              <td>{order.harga}</td>
-              <td>{order.nama}</td>
-              <td>{order.quantity}</td>
-              <td>{order.totalQuantity}</td>
-              <td>{order.totalPrice}</td>
-              <td>{user.alamat || 'Alamat tidak tersedia'}</td>
-              <td>{user.noHp || 'No HP tidak tersedia'}</td>
-              <td>{order.status}</td>
-              <td>
-                <select
-                  defaultValue={order.status}
-                  onChange={(e) => handleStatusChange(order.id, e.target.value)}
-                >
-                  <option value="Sedang di proses">Sedang di proses</option>
-                  <option value="Sedang di kemas">Sedang di kemas</option>
-                  <option value="Dalam perjalanan">Dalam perjalanan</option>
-                  <option value="Telah sampai">Telah sampai</option>
-                  <option value="Pengiriman gagal">Pengiriman gagal</option>
-                  <option value="Pelanggan tidak bisa di hubungi">Pelanggan tidak bisa di hubungi</option>
-                </select>
-              </td>
-            </tr>
-          );
-        })}
-      </tbody> 
+          {orders.map((order) => {
+            const user = users[order.userId] || {};
+            return (
+              <tr key={order.id}>
+                <td>{order.id}</td>
+                <td>{convertFirebaseDate(order.createdAt)}</td>
+                <td>{order.paymentMethod}</td>
+                <td>{order.shippingMethod}</td>
+                {order.cartItems.map((item, index) => (
+                  <React.Fragment key={index}>
+                    <td>{item.nama}</td>
+                    <td>{formatRupiah(item.harga)}</td>
+                    <td>{item.quantity}</td>
+                  </React.Fragment>
+                ))}
+                <td>{order.totalQuantity}</td>
+                <td>{formatRupiah(order.totalPrice)}</td>
+                <td>{`${user.details}, ${user.kecamatan}, ${user.kota}, ${user.provinsi}, ${user.negara}` || 'Alamat tidak tersedia'}</td>
+                <td>{user.nohp || 'No HP tidak tersedia'}</td>
+                <td>{order.status}</td>
+                <td>
+                  <select defaultValue={order.status} className="form-select" onChange={(e) => handleStatusChange(order.id, e.target.value)}>
+                    <option value="Sedang di proses">Sedang di proses</option>
+                    <option value="Sedang di kemas">Sedang di kemas</option>
+                    <option value="Dalam perjalanan">Dalam perjalanan</option>
+                    <option value="Telah sampai">Telah sampai</option>
+                    <option value="Pengiriman gagal">Pengiriman gagal</option>
+                    <option value="Pelanggan tidak bisa di hubungi">Pelanggan tidak bisa di hubungi</option>
+                  </select>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
       </Table>
-      {/* <h1>Pesanan</h1>
-      <thead>
-        <tr>
-          <th>ID Pesanan</th>
-          <th>User ID</th>
-          <th>Created At</th>
-          <th>Payment Method</th>
-          <th>Shipping Method</th>
-          <th>Harga</th>
-          <th>Nama</th>
-          <th>Quantity</th>
-          <th>Total Quantity</th>
-          <th>Total Price</th>
-          <th>Status</th>
-          <th>Alamat</th>
-          <th>No HP</th>
-          <th>Aksi</th>
-        </tr>
-      </thead>
-      <tbody>
-        {orders.map((order) => {
-          const user = users[order.userId] || {};
-          return (
-            <tr key={order.id}>
-              <td>{order.id}</td>
-              <td>{order.userId}</td>
-              <td>{convertFirebaseDate(order.createdAt)}</td>
-              <td>{order.paymentMethod}</td>
-              <td>{order.shippingMethod}</td>
-              <td>{order.harga}</td>
-              <td>{order.nama}</td>
-              <td>{order.quantity}</td>
-              <td>{order.totalQuantity}</td>
-              <td>{order.totalPrice}</td>
-              <td>{order.status}</td>
-              <td>{user.alamat || 'Alamat tidak tersedia'}</td>
-              <td>{user.noHp || 'No HP tidak tersedia'}</td>
-              <td>
-                <select defaultValue={order.status}>
-                  <option value="Sedang di kemas">Sedang di kemas</option>
-                  <option value="Dalam perjalanan">Dalam perjalanan</option>
-                  <option value="Telah sampai">Telah sampai</option>
-                  <option value="Pengiriman gagal">Pengiriman gagal</option>
-                  <option value="Pelanggan tidak bisa di hubungi">Pelanggan tidak bisa di hubungi</option>
-                </select>
-              </td>
-            </tr>
-          );
-        })}
-      </tbody> */}
     </Container>
   );
 }
