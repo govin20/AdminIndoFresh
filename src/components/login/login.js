@@ -12,7 +12,6 @@ export default function Login({ setIsAuthenticated }) {
     if (username === 'admin' && password === 'admin12345') {
       setIsAuthenticated(true);
       navigate('/Produk');
-      alert('Anda berhasil login')
     } else {
       alert('Username atau password salah');
     }

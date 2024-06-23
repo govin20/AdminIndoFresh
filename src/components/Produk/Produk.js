@@ -3,7 +3,6 @@ import { Container, Form, InputGroup, Button, Table, Modal, Pagination } from 'r
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, addDoc, getDocs, updateDoc, doc, deleteDoc } from 'firebase/firestore';
 
-
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
   authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
@@ -52,7 +51,7 @@ function Produk() {
 
   const handleChange = (e) => {
     const { id, value } = e.target;
-    
+
     if (id === 'harga') {
       const unformattedValue = unformatRupiah(value);
       setForm({ ...form, [id]: unformattedValue });
@@ -170,7 +169,7 @@ function Produk() {
   const handlePageChange = (pageNumber) => setCurrentPage(pageNumber);
 
   return (
-    <Container className="container">
+    <Container fluid className="container">
       <Button className="mb-3 bg-success" onClick={handleShowAddModal}>
         Tambah Produk
       </Button>
@@ -180,7 +179,7 @@ function Produk() {
 
       <h2 className="mt-3">Daftar Produk</h2>
       <h4>Total Data Produk: {dataCount}</h4>
-      <Table striped bordered hover>
+      <Table striped bordered hover responsive>
         <thead>
           <tr>
             <th>No</th>
@@ -237,14 +236,7 @@ function Produk() {
             <Form.Control required type="text" id="nama" value={form.nama} onChange={handleChange} aria-describedby="passwordHelpBlock" />
 
             <Form.Label htmlFor="harga">Harga :</Form.Label>
-            <Form.Control
-            required
-              type="text"
-              id="harga"
-              value={form.harga}
-              onChange={handleChange}
-              aria-describedby="passwordHelpBlock"
-            />
+            <Form.Control required type="text" id="harga" value={form.harga} onChange={handleChange} aria-describedby="passwordHelpBlock" />
 
             <Form.Select required className="mt-3" id="jenisHarga" value={form.jenisHarga} onChange={handleChange} aria-label="Default select example">
               <option value="">Pilih Jenis Harga</option>

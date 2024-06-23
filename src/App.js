@@ -17,7 +17,7 @@ function App() {
   };
   return (
     <Router>
-      {[false].map((expand) => (
+      {['md'].map((expand) => (
         <Navbar key={expand} expand={expand} className="bg-body-tertiary mb-3">
           <Container fluid>
             <Navbar.Brand as={Link} to="/Produk">
