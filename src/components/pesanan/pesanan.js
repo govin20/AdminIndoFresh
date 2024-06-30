@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Table } from 'react-bootstrap';
+import { Container, Table, Button, Pagination, Spinner } from 'react-bootstrap';
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, getDocs, updateDoc, doc } from 'firebase/firestore';
+import { getFirestore, collection, getDocs, updateDoc, doc, deleteDoc } from 'firebase/firestore';
+import { Link } from 'react-router-dom';
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -17,7 +18,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Fungsi untuk mengonversi objek tanggal Firebase ke format string
 const convertFirebaseDate = (firebaseDate) => {
   const date = new Date(firebaseDate.seconds * 1000 + firebaseDate.nanoseconds / 1000000);
   return date.toLocaleString();
@@ -26,6 +26,9 @@ const convertFirebaseDate = (firebaseDate) => {
 export default function Pesanan() {
   const [orders, setOrders] = useState([]);
   const [users, setUsers] = useState({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const ordersPerPage = 5;
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -43,9 +46,23 @@ export default function Pesanan() {
       setUsers(usersList);
     };
 
-    fetchOrders();
-    fetchUsers();
+    const fetchData = async () => {
+      await fetchOrders();
+      await fetchUsers();
+      setLoading(false);
+    };
+
+    fetchData();
   }, []);
+
+  if (loading) {
+    return (
+      <div style={{ flex: 1, justifyContent: 'center', alignItems: 'center', width: '90%', position: 'absolute', display: 'flex', height: '80%' }}>
+        <Spinner animation="border" role="status"></Spinner>
+        <span style={{ marginLeft: '10px' }}>Loading...</span>
+      </div>
+    );
+  }
 
   const handleStatusChange = async (orderId, newStatus) => {
     const orderDocRef = doc(db, 'pesanan', orderId);
@@ -53,15 +70,30 @@ export default function Pesanan() {
 
     setOrders((prevOrders) => prevOrders.map((order) => (order.id === orderId ? { ...order, status: newStatus } : order)));
 
-    // Tampilkan alert ketika status berhasil diubah
     alert(`Status pesanan dengan ID ${orderId} berhasil diubah menjadi ${newStatus}`);
   };
+
+  const handleDeleteOrder = async (orderId) => {
+    const orderDocRef = doc(db, 'pesanan', orderId);
+    await deleteDoc(orderDocRef);
+
+    setOrders((prevOrders) => prevOrders.filter((order) => order.id !== orderId));
+
+    alert(`Pesanan dengan ID ${orderId} berhasil dihapus`);
+  };
+
   const formatRupiah = (angka) => {
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
       currency: 'IDR',
     }).format(angka);
   };
+
+  const indexOfLastOrder = currentPage * ordersPerPage;
+  const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
+  const currentOrders = orders.slice(indexOfFirstOrder, indexOfLastOrder);
+
+  const totalPages = Math.ceil(orders.length / ordersPerPage);
 
   return (
     <Container className="mt-2 w-100 mx-auto">
@@ -73,10 +105,7 @@ export default function Pesanan() {
             <th>Waktu</th>
             <th>Pembayaran</th>
             <th>Pengiriman</th>
-            <th>Nama Barang</th>
-            <th>Harga Barang</th>
-            <th>Jumlah Barang</th>
-            <th>Total Jumlah</th>
+            <th>Jumlah</th>
             <th>Total Harga</th>
             <th>Alamat</th>
             <th>No Telp</th>
@@ -85,41 +114,55 @@ export default function Pesanan() {
           </tr>
         </thead>
         <tbody>
-          {orders.map((order) => {
+          {currentOrders.map((order) => {
             const user = users[order.userId] || {};
-            return (
-              <tr key={order.id}>
-                <td>{order.id}</td>
-                <td>{convertFirebaseDate(order.createdAt)}</td>
-                <td>{order.paymentMethod}</td>
-                <td>{order.shippingMethod}</td>
-                {order.cartItems.map((item, index) => (
-                  <React.Fragment key={index}>
-                    <td>{item.nama}</td>
-                    <td>{formatRupiah(item.harga)}</td>
-                    <td>{item.quantity}</td>
-                  </React.Fragment>
-                ))}
-                <td>{order.totalQuantity}</td>
-                <td>{formatRupiah(order.totalPrice)}</td>
-                <td>{`${user.details}, ${user.kecamatan}, ${user.kota}, ${user.provinsi}, ${user.negara}` || 'Alamat tidak tersedia'}</td>
-                <td>{user.nohp || 'No HP tidak tersedia'}</td>
-                <td>{order.status}</td>
-                <td>
-                  <select defaultValue={order.status} className="form-select" onChange={(e) => handleStatusChange(order.id, e.target.value)}>
-                    <option value="Sedang di proses">Sedang di proses</option>
-                    <option value="Sedang di kemas">Sedang di kemas</option>
-                    <option value="Dalam perjalanan">Dalam perjalanan</option>
-                    <option value="Telah sampai">Telah sampai</option>
-                    <option value="Pengiriman gagal">Pengiriman gagal</option>
-                    <option value="Pelanggan tidak bisa di hubungi">Pelanggan tidak bisa di hubungi</option>
-                  </select>
-                </td>
+            return order.cartItems.map((item, index) => (
+              <tr key={index}>
+                {index === 0 && (
+                  <>
+                    <td>{order.id}</td>
+                    <td>{convertFirebaseDate(order.createdAt)}</td>
+                    <td>{order.paymentMethod}</td>
+                    <td>{order.shippingMethod}</td>
+                    <td>{order.totalQuantity}</td>
+                    <td>{formatRupiah(order.totalPrice)}</td>
+                    <td>{`${user.details}, ${user.kecamatan}, ${user.kota}, ${user.provinsi}, ${user.negara}`}</td>
+                    <td>{user.nohp}</td>
+                    <td>{order.status}</td>
+                    <td>
+                      <div>
+                        <select defaultValue={order.status} className="form-select" onChange={(e) => handleStatusChange(order.id, e.target.value)}>
+                          <option value="Sedang di proses">Sedang di proses</option>
+                          <option value="Sedang di kemas">Sedang di kemas</option>
+                          <option value="Dalam perjalanan">Dalam perjalanan</option>
+                          <option value="Telah sampai">Telah sampai</option>
+                          <option value="Pengiriman gagal">Pengiriman gagal</option>
+                          <option value="Pelanggan tidak bisa di hubungi">Pelanggan tidak bisa di hubungi</option>
+                        </select>
+                        <Button variant="danger" className="mt-1" onClick={() => handleDeleteOrder(order.id)}>
+                          Hapus
+                        </Button>
+                        <Button variant="primary" className="mt-1" as={Link} to={`/detail_pesanan/${order.id}`}>
+                          Detail
+                        </Button>
+                      </div>
+                    </td>
+                  </>
+                )}
               </tr>
-            );
+            ));
           })}
         </tbody>
       </Table>
+      <Pagination>
+        <Pagination.Prev onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} />
+        {[...Array(totalPages)].map((_, i) => (
+          <Pagination.Item key={i + 1} active={i + 1 === currentPage} onClick={() => setCurrentPage(i + 1)}>
+            {i + 1}
+          </Pagination.Item>
+        ))}
+        <Pagination.Next onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))} />
+      </Pagination>
     </Container>
   );
 }

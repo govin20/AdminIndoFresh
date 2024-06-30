@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Form, InputGroup, Button, Table, Modal, Pagination } from 'react-bootstrap';
+import { Container, Form, InputGroup, Button, Table, Modal, Pagination, Spinner } from 'react-bootstrap';
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, addDoc, getDocs, updateDoc, doc, deleteDoc } from 'firebase/firestore';
 
@@ -48,6 +48,7 @@ function Produk() {
   const [showModal, setShowModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1); // State for current page
   const [itemsPerPage] = useState(5); // State for items per page
+  const [loading, setLoading] = useState(true);
 
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -109,8 +110,10 @@ function Produk() {
       const data = querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
       setBuahData(data);
       setDataCount(data.length); // Update the count state
+      setLoading(false); // Set loading to false after fetching data
     } catch (error) {
       console.error('Error fetching documents: ', error);
+      setLoading(false); // Set loading to false in case of error
     }
   };
 
@@ -167,6 +170,15 @@ function Produk() {
   }
 
   const handlePageChange = (pageNumber) => setCurrentPage(pageNumber);
+
+  if (loading) {
+    return (
+      <div style={{ flex: 1, justifyContent: 'center', alignItems: 'center', width: '90%', position: 'absolute', display: 'flex', height: '80%' }}>
+        <Spinner animation="border" role="status"></Spinner>
+        <span style={{ marginLeft: '10px' }}>Loading...</span>
+      </div>
+    );
+  }
 
   return (
     <Container fluid className="container">

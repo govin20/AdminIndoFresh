@@ -1,24 +1,46 @@
-import React from 'react';
-import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
-import { Container, Nav, Navbar } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Route, Routes, Link, Navigate } from 'react-router-dom';
+import { Container, Nav, Navbar, Offcanvas } from 'react-bootstrap';
 import Produk from './components/Produk/Produk';
 import Pesanan from './components/pesanan/pesanan';
-import Button from 'react-bootstrap/Button';
-import Offcanvas from 'react-bootstrap/Offcanvas';
+import DetailPesanan from './components/pesanan/detail_pesanan';
 import Login from './components/login/login';
-import { useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import Dashboard from './components/dashboard/dashboard';
+const orders = [];
+const users = {};
+
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentDateTime, setCurrentDateTime] = useState(new Date());
 
   const handleLogout = () => {
-    alert('Anda berhasil logout');
     setIsAuthenticated(false);
   };
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentDateTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatDateTime = (date) => {
+    const options = {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    };
+    return date.toLocaleDateString('id-ID', options);
+  };
+
   return (
     <Router>
       {['md'].map((expand) => (
-        <Navbar key={expand} expand={expand} className="bg-body-tertiary mb-3">
+        <Navbar sticky="top" key={expand} expand={expand} className="bg-body-tertiary mb-3">
           <Container fluid>
             <Navbar.Brand as={Link} to="/Produk">
               Admin IndoFresh
@@ -30,15 +52,21 @@ function App() {
               </Offcanvas.Header>
               <Offcanvas.Body>
                 <Nav className="justify-content-end flex-grow-1 pe-3">
+                  <div className="d-flex align-items-center me-3">
+                    <h6>{formatDateTime(currentDateTime)}</h6>
+                  </div>
+                  <Nav.Link as={Link} to="/Dashboard">
+                    Dashboard
+                  </Nav.Link>
                   <Nav.Link as={Link} to="/Produk">
                     Produk
                   </Nav.Link>
                   <Nav.Link as={Link} to="/Pesanan">
                     Pesanan
                   </Nav.Link>
-                  <Button variant="outline-danger" onClick={handleLogout}>
+                  <Nav.Link variant="outline-danger" onClick={handleLogout}>
                     Logout
-                  </Button>
+                  </Nav.Link>
                 </Nav>
               </Offcanvas.Body>
             </Navbar.Offcanvas>
@@ -51,6 +79,8 @@ function App() {
           <Route path="/Login" element={isAuthenticated ? <Navigate to="/Produk" /> : <Login setIsAuthenticated={setIsAuthenticated} />} />
           <Route path="/Produk" element={isAuthenticated ? <Produk /> : <Navigate to="/Login" />} />
           <Route path="/Pesanan" element={isAuthenticated ? <Pesanan /> : <Navigate to="/Login" />} />
+          <Route path="/detail_pesanan/:orderId" element={isAuthenticated ? <DetailPesanan orders={orders} users={users} /> : <Navigate to="/Login" />} />
+          <Route path="/Dashboard" element={isAuthenticated ? <Dashboard /> : <Navigate to="/Login" />} />
         </Routes>
       </Container>
     </Router>
