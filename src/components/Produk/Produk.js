@@ -46,8 +46,8 @@ function Produk() {
   const [dataCount, setDataCount] = useState(0);
   const [imagePreview, setImagePreview] = useState('');
   const [showModal, setShowModal] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1); // State for current page
-  const [itemsPerPage] = useState(5); // State for items per page
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(5);
   const [loading, setLoading] = useState(true);
 
   const handleChange = (e) => {
@@ -109,27 +109,27 @@ function Produk() {
       const querySnapshot = await getDocs(collection(db, 'buah'));
       const data = querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
       setBuahData(data);
-      setDataCount(data.length); // Update the count state
-      setLoading(false); // Set loading to false after fetching data
+      setDataCount(data.length);
+      setLoading(false);
     } catch (error) {
       console.error('Error fetching documents: ', error);
-      setLoading(false); // Set loading to false in case of error
+      setLoading(false);
     }
   };
 
   const handleEdit = (buah) => {
     setForm(buah);
-    setImagePreview(buah.gambar); // Set the image preview when editing
+    setImagePreview(buah.gambar);
     setEditing(true);
     setCurrentId(buah.id);
-    setShowModal(true); // Show the modal
+    setShowModal(true);
   };
 
   const handleDelete = async (id) => {
     try {
       await deleteDoc(doc(db, 'buah', id));
       alert('Data berhasil dihapus!');
-      fetchBuahData(); // Refresh data after deletion
+      fetchBuahData();
     } catch (error) {
       console.error('Error deleting document: ', error);
       alert('Error deleting data');
@@ -158,12 +158,10 @@ function Produk() {
     fetchBuahData();
   }, []);
 
-  // Logic for displaying current items
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = buahData.filter((buah) => buah.nama.toLowerCase().includes(searchTerm.toLowerCase())).slice(indexOfFirstItem, indexOfLastItem);
 
-  // Logic for displaying page numbers
   const pageNumbers = [];
   for (let i = 1; i <= Math.ceil(buahData.length / itemsPerPage); i++) {
     pageNumbers.push(i);
@@ -175,25 +173,26 @@ function Produk() {
     return (
       <div style={{ flex: 1, justifyContent: 'center', alignItems: 'center', width: '90%', position: 'absolute', display: 'flex', height: '80%' }}>
         <Spinner animation="border" role="status"></Spinner>
-        <span style={{ marginLeft: '10px' }}>Loading...</span>
       </div>
     );
   }
 
   return (
     <Container fluid className="container">
-      <Button className="mb-3 bg-success" onClick={handleShowAddModal}>
+      <Button className="mb-3" onClick={handleShowAddModal} style={{ backgroundColor: 'lightgreen', border: 'none', color: 'black' }}>
         Tambah Produk
       </Button>
       <Form className="mt-1">
         <Form.Control placeholder="Cari nama Produk" type="text" id="search" value={searchTerm} onChange={handleSearch} aria-describedby="searchHelpBlock" />
       </Form>
 
-      <h2 className="mt-3">Daftar Produk</h2>
-      <h4>Total Data Produk: {dataCount}</h4>
+      <div>
+        <h2 className="mt-3">Daftar Produk</h2>
+        <h5>Total Produk: {dataCount}</h5>
+      </div>
       <Table striped bordered hover responsive>
         <thead>
-          <tr>
+          <tr className="text-center">
             <th>No</th>
             <th>Nama Produk</th>
             <th>Harga</th>
@@ -207,8 +206,8 @@ function Produk() {
         </thead>
         <tbody>
           {currentItems.map((buah, index) => (
-            <tr key={buah.id}>
-              <td>{indexOfFirstItem + index + 1}</td>
+            <tr key={buah.id} className="text-center">
+              <td>{indexOfFirstItem + index + 1}.</td>
               <td>{buah.nama}</td>
               <td>{formatRupiah(buah.harga)}</td>
               <td>{buah.jenisHarga}</td>
@@ -219,10 +218,10 @@ function Produk() {
                 <img src={buah.gambar} alt={buah.nama} style={{ width: '100px', height: '100px' }} />
               </td>
               <td>
-                <Button variant="warning" onClick={() => handleEdit(buah)}>
+                <Button onClick={() => handleEdit(buah)} style={{ backgroundColor: 'lightblue', border: 'none', color: 'black' }}>
                   Edit
                 </Button>{' '}
-                <Button variant="danger" onClick={() => handleDelete(buah.id)}>
+                <Button onClick={() => handleDelete(buah.id)} className="mt-2"style={{ backgroundColor: 'lightcoral', border: 'none', color: 'black' }}>
                   Delete
                 </Button>
               </td>

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes, Link, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Link, Navigate, useLocation } from 'react-router-dom';
 import { Container, Nav, Navbar, Offcanvas } from 'react-bootstrap';
 import Produk from './components/Produk/Produk';
 import Pesanan from './components/pesanan/pesanan';
 import DetailPesanan from './components/pesanan/detail_pesanan';
 import Login from './components/login/login';
 import Dashboard from './components/dashboard/dashboard';
+
 const orders = [];
 const users = {};
 
@@ -15,12 +16,19 @@ function App() {
 
   const handleLogout = () => {
     setIsAuthenticated(false);
+    localStorage.removeItem('isAuthenticated');
   };
 
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentDateTime(new Date());
     }, 1000);
+
+    const authStatus = localStorage.getItem('isAuthenticated');
+    if (authStatus === 'true') {
+      setIsAuthenticated(true);
+    }
+
     return () => clearInterval(timer);
   }, []);
 
@@ -30,40 +38,48 @@ function App() {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
     };
     return date.toLocaleDateString('id-ID', options);
   };
 
+  const NavLink = ({ to, children }) => {
+    const location = useLocation();
+    const isActive = location.pathname === to;
+
+    return (
+      <Nav.Link
+        as={Link}
+        to={to}
+        style={{
+          backgroundColor: isActive ? 'lightblue' : 'transparent',
+          border: 'none',
+          color: isActive ? 'black' : 'inherit',
+          borderRadius: 10,
+        }}
+      >
+        {children}
+      </Nav.Link>
+    );
+  };
+
   return (
-    <Router>
-      {['md'].map((expand) => (
-        <Navbar sticky="top" key={expand} expand={expand} className="bg-body-tertiary mb-3">
+    <Router basename="/AdminIndofresh">
+      {isAuthenticated && (
+        <Navbar sticky="top" expand="md" className="bg-body-tertiary mb-3">
           <Container fluid>
             <Navbar.Brand as={Link} to="/Produk">
               Admin IndoFresh
             </Navbar.Brand>
-            <Navbar.Toggle aria-controls={`offcanvasNavbar-expand-${expand}`} />
-            <Navbar.Offcanvas id={`offcanvasNavbar-expand-${expand}`} aria-labelledby={`offcanvasNavbarLabel-expand-${expand}`} placement="end">
+            <Navbar.Toggle aria-controls={`offcanvasNavbar-expand-md`} />
+            <Navbar.Offcanvas id={`offcanvasNavbar-expand-md`} aria-labelledby={`offcanvasNavbarLabel-expand-md`} placement="end">
               <Offcanvas.Header closeButton>
-                <Offcanvas.Title id={`offcanvasNavbarLabel-expand-${expand}`}>Admin IndoFresh</Offcanvas.Title>
+                <Offcanvas.Title id={`offcanvasNavbarLabel-expand-md`}>Admin IndoFresh</Offcanvas.Title>
               </Offcanvas.Header>
               <Offcanvas.Body>
                 <Nav className="justify-content-end flex-grow-1 pe-3">
-                  <div className="d-flex align-items-center me-3">
-                    <h6>{formatDateTime(currentDateTime)}</h6>
-                  </div>
-                  <Nav.Link as={Link} to="/Dashboard">
-                    Dashboard
-                  </Nav.Link>
-                  <Nav.Link as={Link} to="/Produk">
-                    Produk
-                  </Nav.Link>
-                  <Nav.Link as={Link} to="/Pesanan">
-                    Pesanan
-                  </Nav.Link>
+                  <NavLink to="/Dashboard">Dashboard</NavLink>
+                  <NavLink to="/Produk">Produk</NavLink>
+                  <NavLink to="/Pesanan">Pesanan</NavLink>
                   <Nav.Link variant="outline-danger" onClick={handleLogout}>
                     Logout
                   </Nav.Link>
@@ -72,11 +88,14 @@ function App() {
             </Navbar.Offcanvas>
           </Container>
         </Navbar>
-      ))}
+      )}
       <Container className="mt-1">
+        <div className="m-2 text-end">
+          <h4>{formatDateTime(currentDateTime)}</h4>
+        </div>
         <Routes>
-          <Route path="/" element={<Navigate to={isAuthenticated ? '/Produk' : '/Login'} />} />
-          <Route path="/Login" element={isAuthenticated ? <Navigate to="/Produk" /> : <Login setIsAuthenticated={setIsAuthenticated} />} />
+          <Route path="/" element={<Navigate to={isAuthenticated ? '/Dashboard' : '/Login'} />} />
+          <Route path="/Login" element={isAuthenticated ? <Navigate to="/Dashboard" /> : <Login setIsAuthenticated={setIsAuthenticated} />} />
           <Route path="/Produk" element={isAuthenticated ? <Produk /> : <Navigate to="/Login" />} />
           <Route path="/Pesanan" element={isAuthenticated ? <Pesanan /> : <Navigate to="/Login" />} />
           <Route path="/detail_pesanan/:orderId" element={isAuthenticated ? <DetailPesanan orders={orders} users={users} /> : <Navigate to="/Login" />} />

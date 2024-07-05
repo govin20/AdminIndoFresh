@@ -59,7 +59,6 @@ export default function Pesanan() {
     return (
       <div style={{ flex: 1, justifyContent: 'center', alignItems: 'center', width: '90%', position: 'absolute', display: 'flex', height: '80%' }}>
         <Spinner animation="border" role="status"></Spinner>
-        <span style={{ marginLeft: '10px' }}>Loading...</span>
       </div>
     );
   }
@@ -100,15 +99,13 @@ export default function Pesanan() {
       <h4 className="mb-2">Pesanan</h4>
       <Table striped bordered hover responsive className="table-sm">
         <thead className="thead-dark">
-          <tr>
+          <tr className="text-center">
             <th>ID Pesanan</th>
             <th>Waktu</th>
             <th>Pembayaran</th>
-            <th>Pengiriman</th>
             <th>Jumlah</th>
             <th>Total Harga</th>
             <th>Alamat</th>
-            <th>No Telp</th>
             <th>Status</th>
             <th>Aksi</th>
           </tr>
@@ -117,17 +114,15 @@ export default function Pesanan() {
           {currentOrders.map((order) => {
             const user = users[order.userId] || {};
             return order.cartItems.map((item, index) => (
-              <tr key={index}>
+              <tr key={index} className="text-center">
                 {index === 0 && (
                   <>
                     <td>{order.id}</td>
                     <td>{convertFirebaseDate(order.createdAt)}</td>
                     <td>{order.paymentMethod}</td>
-                    <td>{order.shippingMethod}</td>
                     <td>{order.totalQuantity}</td>
                     <td>{formatRupiah(order.totalPrice)}</td>
                     <td>{`${user.details}, ${user.kecamatan}, ${user.kota}, ${user.provinsi}, ${user.negara}`}</td>
-                    <td>{user.nohp}</td>
                     <td>{order.status}</td>
                     <td>
                       <div>
@@ -139,10 +134,10 @@ export default function Pesanan() {
                           <option value="Pengiriman gagal">Pengiriman gagal</option>
                           <option value="Pelanggan tidak bisa di hubungi">Pelanggan tidak bisa di hubungi</option>
                         </select>
-                        <Button variant="danger" className="mt-1" onClick={() => handleDeleteOrder(order.id)}>
+                        <Button className="mt-1" onClick={() => handleDeleteOrder(order.id)} style={{ backgroundColor: 'lightcoral', border: 'none', color: 'black' }}>
                           Hapus
                         </Button>
-                        <Button variant="primary" className="mt-1" as={Link} to={`/detail_pesanan/${order.id}`}>
+                        <Button className="mt-1" as={Link} to={`/detail_pesanan/${order.id}`} style={{ backgroundColor: 'lightblue', border: 'none', color: 'black' }}>
                           Detail
                         </Button>
                       </div>

@@ -1,16 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, getDocs } from 'firebase/firestore';
-import { Card, Container, Row, Col, Table, Spinner } from 'react-bootstrap';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { Card, Container, Row, Col, Table, Spinner, Button } from 'react-bootstrap';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 const DetailPesanan = () => {
   const { orderId } = useParams();
   const [order, setOrder] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [currentUser, setCurrentUser] = useState(null);
+  const printRef = useRef();
 
   const firebaseConfig = {
     apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -24,7 +25,6 @@ const DetailPesanan = () => {
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
-  const auth = getAuth(app);
 
   useEffect(() => {
     const fetchOrderData = async () => {
@@ -56,31 +56,6 @@ const DetailPesanan = () => {
     fetchOrderData();
   }, [orderId, db]);
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setCurrentUser(user);
-      } else {
-        setCurrentUser(null);
-      }
-    });
-
-    return () => unsubscribe();
-  }, [auth]);
-
-  if (loading) {
-    return (
-      <div style={{ flex: 1, justifyContent: 'center', alignItems: 'center', width: '90%', position: 'absolute', display: 'flex', height: '80%' }}>
-        <Spinner animation="border" role="status"></Spinner>
-        <span style={{ marginLeft: '10px' }}>Loading...</span>
-      </div>
-    );
-  }
-
-  if (!order || !user) {
-    return <div>Data tidak ditemukan.</div>;
-  }
-
   const convertFirebaseDate = (firebaseDate) => {
     const date = new Date(firebaseDate.seconds * 1000 + firebaseDate.nanoseconds / 1000000);
     return date.toLocaleString();
@@ -93,84 +68,125 @@ const DetailPesanan = () => {
     }).format(angka);
   };
 
+  const handlePrint = () => {
+    const input = printRef.current;
+    html2canvas(input)
+      .then((canvas) => {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('landscape');
+        const imgProps = pdf.getImageProperties(imgData);
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        pdf.save('detail-pesanan.pdf');
+      })
+      .catch((error) => {
+        console.error('Error generating PDF:', error);
+      });
+  };
+
+  if (loading) {
+    return (
+      <div style={{ flex: 1, justifyContent: 'center', alignItems: 'center', width: '90%', position: 'absolute', display: 'flex', height: '80%' }}>
+        <Spinner animation="border" role="status"></Spinner>
+      </div>
+    );
+  }
+
+  if (!order || !user) {
+    return <div>Data tidak ditemukan.</div>;
+  }
+
+  const whatsappMessage = `Hallo ${order.nama}, kami dari IndoFresh akan melakukan proses delivery pesanan  ${order.paymentMethod} dengan ID Pesanan: ${order.id} ke alamat anda di ${user.provinsi}, ${user.kota}, ${user.kecamatan}, ${user.details}, mohon kesediaannya untuk memastikan apakah anda benar memesan barang  ${order.paymentMethod} senilai ${formatRupiah(order.totalPrice)}?  \nTerima Kasih`;
+  const whatsappLink = `https://wa.me/${user.noWhatsapp}?text=${encodeURIComponent(whatsappMessage)}`;
+
   return (
     <Container>
-      <Card className="mt-4 mb-4">
-        <Card.Header>
-          <h2>Detail Pesanan</h2>
-          <p>
-            <strong>Nama Pengguna: </strong>
-            {currentUser?.displayName}
-          </p>
-        </Card.Header>
-        <Card.Body>
-          <Row>
-            <Col md={6}>
-              <h4>Informasi Pesanan</h4>
-              <p>
-                <strong>ID Pesanan:</strong> {order.id}
-              </p>
-              <p>
-                <strong>Tanggal: </strong>
-                {convertFirebaseDate(order.createdAt)}
-              </p>
-              <p>
-                <strong>Metode Pembayaran: </strong> {order.paymentMethod}
-              </p>
-              <p>
-                <strong>Metode Pengiriman: </strong> {order.shippingMethod}
-              </p>
-              <p>
-                <strong>Total Jumlah: </strong> {order.totalQuantity}
-              </p>
-              <p>
-                <strong>Total Harga: </strong>
-                {formatRupiah(order.totalPrice)}
-              </p>
-              <p>
-                <strong>Status: </strong> {order.status}
-              </p>
-            </Col>
-            <Col md={6}>
-              <h4>Detail Pengguna</h4>
-              <p>
-                <strong>ID Pelanggan:</strong> {order.userId}
-              </p>
-              <p>
-                <strong>Nama: </strong> {currentUser?.displayName}
-              </p>
-              <p>
-                <strong>Alamat: </strong> {`${user.kecamatan}, ${user.kota}, ${user.provinsi}, ${user.negara}`}
-              </p>
-              <p>
-                <strong>Detail Alamat: </strong> {user.details}
-              </p>
-              <p>
-                <strong>No HP: </strong> {user.nohp}
-              </p>
-            </Col>
-          </Row>
-          <h4 className="mt-4">Barang Pesanan</h4>
-          <Table striped bordered hover className="mt-3">
-            <thead>
-              <tr>
-                <th>Nama</th>
-                <th>Harga</th>
-                <th>Jumlah</th>
-              </tr>
-            </thead>
-            <tbody>
-              {order.cartItems.map((item, index) => (
-                <tr key={index}>
-                  <td>{item.nama}</td>
-                  <td>{formatRupiah(item.harga)}</td>
-                  <td>{item.quantity}</td>
+      <Button onClick={handlePrint} style={{ backgroundColor: 'lightblue', border: 'none', color: 'black' }}>
+        Download pesanan
+      </Button>
+      <div ref={printRef}>
+        <Card className="mt-4 mb-4">
+          <Card.Header>
+            <h2>Detail Pesanan</h2>
+            <p>
+              <strong>Nama Pelanggan: </strong>
+              {order.nama}
+            </p>
+          </Card.Header>
+          <Card.Body>
+            <Row>
+              <Col md={6}>
+                <h4>Informasi Pesanan</h4>
+                <p>
+                  <strong>ID Pesanan:</strong> {order.id}
+                </p>
+                <p>
+                  <strong>Tanggal: </strong>
+                  {convertFirebaseDate(order.createdAt)}
+                </p>
+                <p>
+                  <strong>Metode Pembayaran: </strong> {order.paymentMethod}
+                </p>
+                <p>
+                  <strong>Metode Pengiriman: </strong> {order.shippingMethod}
+                </p>
+                <p>
+                  <strong>Total Jumlah: </strong> {order.totalQuantity}
+                </p>
+                <p>
+                  <strong>Total Harga: </strong>
+                  {formatRupiah(order.totalPrice)}
+                </p>
+                <p>
+                  <strong>Status: </strong> {order.status}
+                </p>
+              </Col>
+              <Col md={6}>
+                <h4>Detail Pelanggan</h4>
+                <p>
+                  <strong>ID Pelanggan:</strong> {order.userId}
+                </p>
+                <p>
+                  <strong>Nama Pelanggan: </strong> {order.nama}
+                </p>
+                <p>
+                  <strong>Alamat: </strong> {`${user.kecamatan}, ${user.kota}, ${user.provinsi}, ${user.negara}`}
+                </p>
+                <p>
+                  <strong>Detail Alamat: </strong> {user.details}
+                </p>
+                <p>
+                  <strong>No Whatsapp: </strong>
+                  <a href={whatsappLink} target="_blank" rel="noopener noreferrer">
+                    {user.noWhatsapp}
+                  </a>
+                </p>
+              </Col>
+            </Row>
+            <h4 className="mt-4">Barang Pesanan</h4>
+            <Table striped bordered hover className="mt-3">
+              <thead>
+                <tr>
+                  <th>Nama</th>
+                  <th>Harga</th>
+                  <th>Jumlah</th>
                 </tr>
-              ))}
-            </tbody>
-          </Table>
-        </Card.Body>
-      </Card>
+              </thead>
+              <tbody>
+                {order.cartItems.map((item, index) => (
+                  <tr key={index}>
+                    <td>{item.nama}</td>
+                    <td>{formatRupiah(item.harga)}</td>
+                    <td>{item.quantity}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </Card.Body>
+        </Card>
+      </div>
     </Container>
   );
 };
