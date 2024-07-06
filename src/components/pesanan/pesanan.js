@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Table, Button, Pagination, Spinner } from 'react-bootstrap';
+import { Container, Table, Button, Pagination, Spinner, Form } from 'react-bootstrap';
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, getDocs, updateDoc, doc, deleteDoc } from 'firebase/firestore';
 import { Link } from 'react-router-dom';
@@ -29,6 +29,15 @@ export default function Pesanan() {
   const [currentPage, setCurrentPage] = useState(1);
   const ordersPerPage = 5;
   const [loading, setLoading] = useState(true);
+  const [selectedStatuses, setSelectedStatuses] = useState(['Sedang di proses']);
+  const statuses = [
+    'Sedang di proses',
+    'Sedang di kemas',
+    'Dalam perjalanan',
+    'Telah sampai',
+    'Pengiriman gagal',
+    'Pelanggan tidak bisa di hubungi',
+  ];
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -55,14 +64,6 @@ export default function Pesanan() {
     fetchData();
   }, []);
 
-  if (loading) {
-    return (
-      <div style={{ flex: 1, justifyContent: 'center', alignItems: 'center', width: '90%', position: 'absolute', display: 'flex', height: '80%' }}>
-        <Spinner animation="border" role="status"></Spinner>
-      </div>
-    );
-  }
-
   const handleStatusChange = async (orderId, newStatus) => {
     const orderDocRef = doc(db, 'pesanan', orderId);
     await updateDoc(orderDocRef, { status: newStatus });
@@ -88,15 +89,59 @@ export default function Pesanan() {
     }).format(angka);
   };
 
+  const handleCheckboxChange = (status) => {
+    setSelectedStatuses((prevStatuses) =>
+      prevStatuses.includes(status) ? prevStatuses.filter((s) => s !== status) : [...prevStatuses, status]
+    );
+  };
+
+  if (loading) {
+    return (
+      <div style={{ flex: 1, justifyContent: 'center', alignItems: 'center', width: '90%', position: 'absolute', display: 'flex', height: '80%' }}>
+        <Spinner animation="border" role="status"></Spinner>
+      </div>
+    );
+  }
+
+  const filteredOrders = orders.filter((order) => selectedStatuses.includes(order.status));
+
+  // Sort the filtered orders to prioritize "Sedang di proses"
+  if (selectedStatuses.length === statuses.length) {
+    filteredOrders.sort((a, b) => {
+      if (a.status === 'Sedang di proses' && b.status !== 'Sedang di proses') return -1;
+      if (a.status !== 'Sedang di proses' && b.status === 'Sedang di proses') return 1;
+      return 0;
+    });
+  }
+
   const indexOfLastOrder = currentPage * ordersPerPage;
   const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
-  const currentOrders = orders.slice(indexOfFirstOrder, indexOfLastOrder);
+  const currentOrders = filteredOrders.slice(indexOfFirstOrder, indexOfLastOrder);
 
-  const totalPages = Math.ceil(orders.length / ordersPerPage);
+  const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
 
   return (
     <Container className="mt-2 w-100 mx-auto">
       <h4 className="mb-2">Pesanan</h4>
+      <div className="mb-2 d-flex">
+        <Form.Check
+          type="checkbox"
+          label="Tampilkan Semua"
+          checked={selectedStatuses.length === statuses.length}
+          onChange={() =>
+            setSelectedStatuses(selectedStatuses.length === statuses.length ? [] : [...statuses])
+          }
+        />
+        {statuses.map((status) => (
+          <Form.Check
+            key={status}
+            type="checkbox"
+            label={status}
+            checked={selectedStatuses.includes(status)}
+            onChange={() => handleCheckboxChange(status)}
+          />
+        ))}
+      </div>
       <Table striped bordered hover responsive className="table-sm">
         <thead className="thead-dark">
           <tr className="text-center">
@@ -122,17 +167,16 @@ export default function Pesanan() {
                     <td>{order.paymentMethod}</td>
                     <td>{order.totalQuantity}</td>
                     <td>{formatRupiah(order.totalPrice)}</td>
-                    <td>{`${user.details}, ${user.kecamatan}, ${user.kota}, ${user.provinsi}, ${user.negara}`}</td>
+                    <td>{`${user.provinsi}, ${user.kota}, ${user.kecamatan}, ${user.kelurahan}, ${user.details} `}</td>
                     <td>{order.status}</td>
                     <td>
                       <div>
                         <select defaultValue={order.status} className="form-select" onChange={(e) => handleStatusChange(order.id, e.target.value)}>
-                          <option value="Sedang di proses">Sedang di proses</option>
-                          <option value="Sedang di kemas">Sedang di kemas</option>
-                          <option value="Dalam perjalanan">Dalam perjalanan</option>
-                          <option value="Telah sampai">Telah sampai</option>
-                          <option value="Pengiriman gagal">Pengiriman gagal</option>
-                          <option value="Pelanggan tidak bisa di hubungi">Pelanggan tidak bisa di hubungi</option>
+                          {statuses.map((status) => (
+                            <option key={status} value={status}>
+                              {status}
+                            </option>
+                          ))}
                         </select>
                         <Button className="mt-1" onClick={() => handleDeleteOrder(order.id)} style={{ backgroundColor: 'lightcoral', border: 'none', color: 'black' }}>
                           Hapus

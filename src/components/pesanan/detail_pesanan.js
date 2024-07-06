@@ -136,6 +136,9 @@ const DetailPesanan = () => {
                   <strong>Total Jumlah: </strong> {order.totalQuantity}
                 </p>
                 <p>
+                  <strong>Diskon: </strong> {order.discount}
+                </p>
+                <p>
                   <strong>Total Harga: </strong>
                   {formatRupiah(order.totalPrice)}
                 </p>
@@ -152,7 +155,7 @@ const DetailPesanan = () => {
                   <strong>Nama Pelanggan: </strong> {order.nama}
                 </p>
                 <p>
-                  <strong>Alamat: </strong> {`${user.kecamatan}, ${user.kota}, ${user.provinsi}, ${user.negara}`}
+                  <strong>Alamat: </strong> {`${user.provinsi}, ${user.kota}, ${user.kecamatan}, ${user.kelurahan}`}
                 </p>
                 <p>
                   <strong>Detail Alamat: </strong> {user.details}
