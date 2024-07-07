@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Container, Form, InputGroup, Button, Table, Modal, Pagination, Spinner } from 'react-bootstrap';
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, addDoc, getDocs, updateDoc, doc, deleteDoc } from 'firebase/firestore';
+import { MdOutlineAddBusiness } from 'react-icons/md';
+import { BsSearch } from 'react-icons/bs';
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -180,15 +182,16 @@ function Produk() {
   return (
     <Container fluid className="container">
       <Button className="mb-3" onClick={handleShowAddModal} style={{ backgroundColor: 'lightgreen', border: 'none', color: 'black' }}>
-        Tambah Produk
+        Tambah Produk <MdOutlineAddBusiness />
       </Button>
-      <Form className="mt-1">
+      <Form className="mt-1 d-flex">
         <Form.Control placeholder="Cari nama Produk" type="text" id="search" value={searchTerm} onChange={handleSearch} aria-describedby="searchHelpBlock" />
+        <div className="d-flex justify-content-center align-items-center ms-2 p-2" style={{ backgroundColor: 'lightblue', borderRadius: 5 }}>
+          <BsSearch />
+        </div>
       </Form>
-
-      <div>
-        <h2 className="mt-3">Daftar Produk</h2>
-        <h5>Total Produk: {dataCount}</h5>
+      <div className="m-3">
+        <h5>Jumlah Produk: {dataCount}</h5>
       </div>
       <Table striped bordered hover responsive>
         <thead>
@@ -221,7 +224,7 @@ function Produk() {
                 <Button onClick={() => handleEdit(buah)} style={{ backgroundColor: 'lightblue', border: 'none', color: 'black' }}>
                   Edit
                 </Button>{' '}
-                <Button onClick={() => handleDelete(buah.id)} className="mt-2"style={{ backgroundColor: 'lightcoral', border: 'none', color: 'black' }}>
+                <Button onClick={() => handleDelete(buah.id)} className="mt-2" style={{ backgroundColor: 'lightcoral', border: 'none', color: 'black' }}>
                   Delete
                 </Button>
               </td>

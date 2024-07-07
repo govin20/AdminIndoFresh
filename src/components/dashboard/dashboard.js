@@ -6,7 +6,8 @@ import { getFirestore, collection, getDocs } from 'firebase/firestore';
 import { initializeApp } from 'firebase/app';
 import moment from 'moment';
 import 'chart.js/auto';
-
+import { AiOutlineProduct } from "react-icons/ai";
+import { BsCartCheck,BsPeople   } from "react-icons/bs";
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
   authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
@@ -222,15 +223,18 @@ const Dashboard = () => {
         <Col md={6}>
           <Card>
             <Card.Body className="d-flex justify-content-between">
-              <div>
-                <Card.Title>Produk</Card.Title>
+              <div className=' text-center p-2' style={{backgroundColor:'lightblue',borderRadius:5,width:'25%'}}>
+              <AiOutlineProduct size={40}/>
+                <Card.Title><h6>Produk</h6></Card.Title>
                 <CountUp start={0} end={produkCount} duration={3} separator="," />
               </div>
-              <div>
+              <div className=' text-center p-2' style={{backgroundColor:'lightblue',borderRadius:5,width:'25%'}}>
+              <BsCartCheck />
                 <Card.Title>Pesanan</Card.Title>
                 <CountUp start={0} end={orderCount} duration={2} separator="," />
               </div>
-              <div>
+              <div className=' text-center p-2' style={{backgroundColor:'lightblue',borderRadius:5,width:'25%'}}>
+              <BsPeople />
                 <Card.Title>Pelanggan</Card.Title>
                 <CountUp start={0} end={userCount} duration={2} separator="," />
               </div>

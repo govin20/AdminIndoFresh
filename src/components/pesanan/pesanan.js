@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Table, Button, Pagination, Spinner, Form } from 'react-bootstrap';
+import { Container, Table, Button, Pagination, Spinner, Form,Dropdown } from 'react-bootstrap';
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, getDocs, updateDoc, doc, deleteDoc } from 'firebase/firestore';
 import { Link } from 'react-router-dom';
@@ -120,28 +120,49 @@ export default function Pesanan() {
 
   const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
 
+  const handleCheckboxChangeInternal = (status) => {
+    setSelectedStatuses((prev) =>
+      prev.includes(status)
+        ? prev.filter((item) => item !== status)
+        : [...prev, status]
+    );
+  };
+  
+  const handleItemClick = (status) => {
+    handleCheckboxChangeInternal(status);
+  };
+
   return (
     <Container className="mt-2 w-100 mx-auto">
-      <h4 className="mb-2">Pesanan</h4>
-      <div className="mb-2 d-flex">
-        <Form.Check
-          type="checkbox"
-          label="Tampilkan Semua"
-          checked={selectedStatuses.length === statuses.length}
-          onChange={() =>
-            setSelectedStatuses(selectedStatuses.length === statuses.length ? [] : [...statuses])
-          }
-        />
-        {statuses.map((status) => (
+      <Dropdown className='mb-3 mt-3'>
+      <Dropdown.Toggle variant="success" id="dropdown-basic">
+        Pilih Status
+      </Dropdown.Toggle>
+
+      <Dropdown.Menu>
+        <Dropdown.Item as="div">
           <Form.Check
-            key={status}
             type="checkbox"
-            label={status}
-            checked={selectedStatuses.includes(status)}
-            onChange={() => handleCheckboxChange(status)}
+            label="Tampilkan Semua"
+            checked={selectedStatuses.length === statuses.length}
+            onChange={() =>
+              setSelectedStatuses(selectedStatuses.length === statuses.length ? [] : [...statuses])
+            }
           />
+        </Dropdown.Item>
+        {statuses.map((status) => (
+          <Dropdown.Item as="div" key={status} onClick={() => handleItemClick(status)}>
+            <Form.Check
+              type="checkbox"
+              label={status}
+              checked={selectedStatuses.includes(status)}
+              onChange={() => handleCheckboxChange(status)}
+              onClick={(e) => e.stopPropagation()} // This ensures the checkbox itself doesn't capture the click
+            />
+          </Dropdown.Item>
         ))}
-      </div>
+      </Dropdown.Menu>
+    </Dropdown>
       <Table striped bordered hover responsive className="table-sm">
         <thead className="thead-dark">
           <tr className="text-center">

@@ -6,6 +6,8 @@ import Pesanan from './components/pesanan/pesanan';
 import DetailPesanan from './components/pesanan/detail_pesanan';
 import Login from './components/login/login';
 import Dashboard from './components/dashboard/dashboard';
+import { BsReverseLayoutTextWindowReverse,BsCartCheck,BsArrowBarRight,BsCalendar3} from "react-icons/bs";
+import { AiOutlineProduct } from "react-icons/ai";
 
 const orders = [];
 const users = {};
@@ -65,7 +67,7 @@ function App() {
   return (
     <Router basename="/AdminIndofresh">
       {isAuthenticated && (
-        <Navbar sticky="top" expand="md" className="bg-body-tertiary mb-3">
+        <Navbar sticky="top" expand="md" className="bg-body-tertiary mb-3" >
           <Container fluid>
             <Navbar.Brand as={Link} to="/Produk">
               Admin IndoFresh
@@ -77,11 +79,11 @@ function App() {
               </Offcanvas.Header>
               <Offcanvas.Body>
                 <Nav className="justify-content-end flex-grow-1 pe-3">
-                  <NavLink to="/Dashboard">Dashboard</NavLink>
-                  <NavLink to="/Produk">Produk</NavLink>
-                  <NavLink to="/Pesanan">Pesanan</NavLink>
+                  <NavLink to="/Dashboard">Dashboard <BsReverseLayoutTextWindowReverse size={15} /></NavLink>
+                  <NavLink to="/Produk">Produk <AiOutlineProduct /></NavLink>
+                  <NavLink to="/Pesanan">Pesanan <BsCartCheck /></NavLink>
                   <Nav.Link variant="outline-danger" onClick={handleLogout}>
-                    Logout
+                    Logout <BsArrowBarRight />
                   </Nav.Link>
                 </Nav>
               </Offcanvas.Body>
@@ -91,7 +93,7 @@ function App() {
       )}
       <Container className="mt-1">
         <div className="m-2 text-end">
-          <h4>{formatDateTime(currentDateTime)}</h4>
+          <h4><BsCalendar3 /> {formatDateTime(currentDateTime)}</h4>
         </div>
         <Routes>
           <Route path="/" element={<Navigate to={isAuthenticated ? '/Dashboard' : '/Login'} />} />
