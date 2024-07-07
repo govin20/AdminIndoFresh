@@ -1,0 +1,19 @@
+{
+  "files": {
+    "main.css": "/AdminIndoFresh/static/css/main.ff02f4b5.css",
+    "main.js": "/AdminIndoFresh/static/js/main.b43bca3f.js",
+    "static/js/213.c6be2e20.chunk.js": "/AdminIndoFresh/static/js/213.c6be2e20.chunk.js",
+    "static/js/455.02d6a7b0.chunk.js": "/AdminIndoFresh/static/js/455.02d6a7b0.chunk.js",
+    "static/js/453.c5665743.chunk.js": "/AdminIndoFresh/static/js/453.c5665743.chunk.js",
+    "index.html": "/AdminIndoFresh/index.html",
+    "main.ff02f4b5.css.map": "/AdminIndoFresh/static/css/main.ff02f4b5.css.map",
+    "main.b43bca3f.js.map": "/AdminIndoFresh/static/js/main.b43bca3f.js.map",
+    "213.c6be2e20.chunk.js.map": "/AdminIndoFresh/static/js/213.c6be2e20.chunk.js.map",
+    "455.02d6a7b0.chunk.js.map": "/AdminIndoFresh/static/js/455.02d6a7b0.chunk.js.map",
+    "453.c5665743.chunk.js.map": "/AdminIndoFresh/static/js/453.c5665743.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.ff02f4b5.css",
+    "static/js/main.b43bca3f.js"
+  ]
+}
